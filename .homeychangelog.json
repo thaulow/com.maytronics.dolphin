@@ -4,5 +4,8 @@
   },
   "1.0.3": {
     "en": "Changed driver images"
+  },
+  "1.0.4": {
+    "en": "Added robot driving control"
   }
 }
