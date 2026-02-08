@@ -1,0 +1,16 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Cleaning Mode"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "picker",
+  "values": [
+    { "id": "all", "title": { "en": "Regular" } },
+    { "id": "short", "title": { "en": "Fast" } },
+    { "id": "floor", "title": { "en": "Floor Only" } },
+    { "id": "water", "title": { "en": "Water Line" } },
+    { "id": "ultra", "title": { "en": "Ultra Clean" } }
+  ]
+}

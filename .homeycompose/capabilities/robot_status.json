@@ -1,0 +1,18 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Robot Status"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "picker",
+  "values": [
+    { "id": "off", "title": { "en": "Off" } },
+    { "id": "cleaning", "title": { "en": "Cleaning" } },
+    { "id": "error", "title": { "en": "Error" } },
+    { "id": "init", "title": { "en": "Initializing" } },
+    { "id": "programming", "title": { "en": "Programming" } },
+    { "id": "holddelay", "title": { "en": "Delayed Start" } },
+    { "id": "holdweekly", "title": { "en": "Weekly Schedule" } }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "drivers": {
+    "dolphin": {
+      "pair": {
+        "login_credentials": {
+          "title": "Maytronics Account",
+          "hint": "Enter the email and password you use for the MyDolphin Plus app."
+        }
+      }
+    }
+  }
+}

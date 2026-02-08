@@ -1,0 +1,9 @@
+{
+  "type": "string",
+  "title": {
+    "en": "WiFi Network"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor"
+}

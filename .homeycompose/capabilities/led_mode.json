@@ -1,0 +1,14 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "LED Mode"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "picker",
+  "values": [
+    { "id": "blinking", "title": { "en": "Blinking" } },
+    { "id": "always_on", "title": { "en": "Always On" } },
+    { "id": "disco", "title": { "en": "Disco" } }
+  ]
+}

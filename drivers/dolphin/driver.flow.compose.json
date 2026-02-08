@@ -1,0 +1,134 @@
+{
+  "triggers": [
+    {
+      "id": "cleaning_started",
+      "title": {
+        "en": "Cleaning started"
+      },
+      "platforms": ["local"],
+      "tokens": [
+        {
+          "name": "mode",
+          "type": "string",
+          "title": {
+            "en": "Cleaning mode"
+          },
+          "example": {
+            "en": "all"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cleaning_finished",
+      "title": {
+        "en": "Cleaning finished"
+      },
+      "platforms": ["local"]
+    },
+    {
+      "id": "robot_error_occurred",
+      "title": {
+        "en": "An error occurred"
+      },
+      "platforms": ["local"],
+      "tokens": [
+        {
+          "name": "error_code",
+          "type": "number",
+          "title": {
+            "en": "Error code"
+          },
+          "example": {
+            "en": "5"
+          }
+        }
+      ]
+    },
+    {
+      "id": "filter_bag_full",
+      "title": {
+        "en": "Filter bag is full"
+      },
+      "platforms": ["local"]
+    }
+  ],
+  "conditions": [
+    {
+      "id": "is_cleaning",
+      "title": {
+        "en": "Robot !{{is|isn't}} cleaning"
+      },
+      "platforms": ["local"]
+    }
+  ],
+  "actions": [
+    {
+      "id": "start_cleaning",
+      "title": {
+        "en": "Start cleaning"
+      },
+      "titleFormatted": {
+        "en": "Start cleaning in [[mode]] mode"
+      },
+      "platforms": ["local"],
+      "args": [
+        {
+          "name": "mode",
+          "type": "dropdown",
+          "values": [
+            { "id": "all", "label": { "en": "Regular" } },
+            { "id": "short", "label": { "en": "Fast" } },
+            { "id": "floor", "label": { "en": "Floor Only" } },
+            { "id": "water", "label": { "en": "Water Line" } },
+            { "id": "ultra", "label": { "en": "Ultra Clean" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stop_cleaning",
+      "title": {
+        "en": "Stop cleaning"
+      },
+      "platforms": ["local"]
+    },
+    {
+      "id": "return_to_base",
+      "title": {
+        "en": "Return to base"
+      },
+      "platforms": ["local"]
+    },
+    {
+      "id": "set_led",
+      "title": {
+        "en": "Set LED"
+      },
+      "titleFormatted": {
+        "en": "Set LED to [[mode]] at [[brightness]]% brightness"
+      },
+      "platforms": ["local"],
+      "args": [
+        {
+          "name": "mode",
+          "type": "dropdown",
+          "values": [
+            { "id": "blinking", "label": { "en": "Blinking" } },
+            { "id": "always_on", "label": { "en": "Always On" } },
+            { "id": "disco", "label": { "en": "Disco" } }
+          ]
+        },
+        {
+          "name": "brightness",
+          "type": "range",
+          "min": 0,
+          "max": 100,
+          "step": 5,
+          "label": "%",
+          "labelDecimals": 0
+        }
+      ]
+    }
+  ]
+}
