@@ -14,6 +14,9 @@ function sha256(data: string): string {
 /**
  * Signs an AWS IoT WebSocket URL using SigV4.
  * Returns a wss:// URL that can be used with an MQTT client.
+ *
+ * IMPORTANT: X-Amz-Security-Token must NOT be in the canonical query string
+ * for signing — it is appended AFTER the signature (per AWS IoT SDK v1).
  */
 export function signWebSocketUrl(
   endpoint: string,
@@ -27,22 +30,13 @@ export function signWebSocketUrl(
   const service = 'iotdevicegateway';
   const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
 
-  // Build canonical query string (parameters must be sorted alphabetically)
-  const queryParams: Record<string, string> = {
-    'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
-    'X-Amz-Credential': `${credentials.AccessKeyId}/${credentialScope}`,
-    'X-Amz-Date': amzDate,
-    'X-Amz-SignedHeaders': 'host',
-  };
-
-  if (credentials.Token) {
-    queryParams['X-Amz-Security-Token'] = credentials.Token;
-  }
-
-  const sortedKeys = Object.keys(queryParams).sort();
-  const canonicalQueryString = sortedKeys
-    .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(queryParams[k])}`)
-    .join('&');
+  // Build canonical query string — only signing parameters (NOT security token)
+  const canonicalQueryString = [
+    `X-Amz-Algorithm=AWS4-HMAC-SHA256`,
+    `X-Amz-Credential=${encodeURIComponent(`${credentials.AccessKeyId}/${credentialScope}`)}`,
+    `X-Amz-Date=${amzDate}`,
+    `X-Amz-SignedHeaders=host`,
+  ].join('&');
 
   // Canonical request
   const canonicalRequest = [
@@ -75,5 +69,10 @@ export function signWebSocketUrl(
     .update(stringToSign)
     .digest('hex');
 
-  return `wss://${endpoint}/mqtt?${canonicalQueryString}&X-Amz-Signature=${signature}`;
+  // Build final URL — security token added AFTER signature
+  let url = `wss://${endpoint}/mqtt?${canonicalQueryString}&X-Amz-Signature=${signature}`;
+  if (credentials.Token) {
+    url += `&X-Amz-Security-Token=${encodeURIComponent(credentials.Token)}`;
+  }
+  return url;
 }

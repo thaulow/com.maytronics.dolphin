@@ -11,7 +11,7 @@
     "en": "Maytronics Dolphin"
   },
   "description": {
-    "en": "Adds support for Maytronics Dolphin range pool cleaners."
+    "en": "Control your Maytronics Dolphin robotic pool cleaner from Homey. Start and stop cleaning cycles, switch between cleaning modes, monitor filter bag status, water temperature, and robot errors. Includes flow cards for automating your pool maintenance."
   },
   "category": [
     "appliances"
@@ -275,6 +275,77 @@
             "labelDecimals": 0
           }
         ]
+      },
+      {
+        "id": "navigate",
+        "title": {
+          "en": "Navigate robot"
+        },
+        "titleFormatted": {
+          "en": "Navigate robot [[direction]]"
+        },
+        "platforms": [
+          "local"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=dolphin"
+          },
+          {
+            "name": "direction",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "forward",
+                "label": {
+                  "en": "Forward"
+                }
+              },
+              {
+                "id": "backward",
+                "label": {
+                  "en": "Backward"
+                }
+              },
+              {
+                "id": "left",
+                "label": {
+                  "en": "Left"
+                }
+              },
+              {
+                "id": "right",
+                "label": {
+                  "en": "Right"
+                }
+              },
+              {
+                "id": "stop",
+                "label": {
+                  "en": "Stop"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "exit_navigation",
+        "title": {
+          "en": "Exit manual navigation"
+        },
+        "platforms": [
+          "local"
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=dolphin"
+          }
+        ]
       }
     ]
   },
@@ -285,7 +356,6 @@
       },
       "class": "other",
       "capabilities": [
-        "onoff",
         "cleaning_mode",
         "robot_status",
         "cycle_time_remaining",
@@ -296,19 +366,13 @@
         "network_name",
         "robot_error",
         "led_mode",
-        "dim"
+        "nav_forward",
+        "nav_stop",
+        "nav_left",
+        "nav_right",
+        "nav_backward"
       ],
       "capabilitiesOptions": {
-        "onoff": {
-          "title": {
-            "en": "Cleaning"
-          }
-        },
-        "dim": {
-          "title": {
-            "en": "LED Brightness"
-          }
-        },
         "measure_temperature": {
           "title": {
             "en": "Water Temperature"
@@ -396,6 +460,12 @@
       "setable": true,
       "uiComponent": "picker",
       "values": [
+        {
+          "id": "off",
+          "title": {
+            "en": "Off"
+          }
+        },
         {
           "id": "all",
           "title": {
@@ -501,6 +571,56 @@
         }
       ]
     },
+    "nav_backward": {
+      "type": "boolean",
+      "title": {
+        "en": "Backward"
+      },
+      "getable": false,
+      "setable": true,
+      "uiComponent": "button",
+      "icon": "/assets/icons/backward.svg"
+    },
+    "nav_forward": {
+      "type": "boolean",
+      "title": {
+        "en": "Forward"
+      },
+      "getable": false,
+      "setable": true,
+      "uiComponent": "button",
+      "icon": "/assets/icons/forward.svg"
+    },
+    "nav_left": {
+      "type": "boolean",
+      "title": {
+        "en": "Left"
+      },
+      "getable": false,
+      "setable": true,
+      "uiComponent": "button",
+      "icon": "/assets/icons/left.svg"
+    },
+    "nav_right": {
+      "type": "boolean",
+      "title": {
+        "en": "Right"
+      },
+      "getable": false,
+      "setable": true,
+      "uiComponent": "button",
+      "icon": "/assets/icons/right.svg"
+    },
+    "nav_stop": {
+      "type": "boolean",
+      "title": {
+        "en": "Stop"
+      },
+      "getable": false,
+      "setable": true,
+      "uiComponent": "button",
+      "icon": "/assets/icons/stop.svg"
+    },
     "network_name": {
       "type": "string",
       "title": {
@@ -526,7 +646,7 @@
       },
       "getable": true,
       "setable": false,
-      "uiComponent": "picker",
+      "uiComponent": "sensor",
       "values": [
         {
           "id": "off",

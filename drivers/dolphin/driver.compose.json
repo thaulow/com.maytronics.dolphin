@@ -4,7 +4,6 @@
   },
   "class": "other",
   "capabilities": [
-    "onoff",
     "cleaning_mode",
     "robot_status",
     "cycle_time_remaining",
@@ -15,19 +14,13 @@
     "network_name",
     "robot_error",
     "led_mode",
-    "dim"
+    "nav_forward",
+    "nav_stop",
+    "nav_left",
+    "nav_right",
+    "nav_backward"
   ],
   "capabilitiesOptions": {
-    "onoff": {
-      "title": {
-        "en": "Cleaning"
-      }
-    },
-    "dim": {
-      "title": {
-        "en": "LED Brightness"
-      }
-    },
     "measure_temperature": {
       "title": {
         "en": "Water Temperature"

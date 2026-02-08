@@ -5,7 +5,7 @@
   },
   "getable": true,
   "setable": false,
-  "uiComponent": "picker",
+  "uiComponent": "sensor",
   "values": [
     { "id": "off", "title": { "en": "Off" } },
     { "id": "cleaning", "title": { "en": "Cleaning" } },

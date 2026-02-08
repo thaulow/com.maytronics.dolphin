@@ -33,10 +33,23 @@ class DolphinDriver extends Homey.Driver {
         await args.device.setLed(args.mode, args.brightness);
       });
 
+    // Action: Navigate robot
+    this.homey.flow.getActionCard('navigate')
+      .registerRunListener(async (args: { device: DolphinDevice; direction: string }) => {
+        await args.device.navigate(args.direction);
+      });
+
+    // Action: Exit manual navigation
+    this.homey.flow.getActionCard('exit_navigation')
+      .registerRunListener(async (args: { device: DolphinDevice }) => {
+        await args.device.exitNavigation();
+      });
+
     // Condition: Is cleaning
     this.homey.flow.getConditionCard('is_cleaning')
       .registerRunListener(async (args: { device: DolphinDevice }) => {
-        return args.device.getCapabilityValue('onoff') === true;
+        const mode = args.device.getCapabilityValue('cleaning_mode');
+        return mode !== 'off' && mode != null;
       });
 
     this.log('DolphinDriver has been initialized');

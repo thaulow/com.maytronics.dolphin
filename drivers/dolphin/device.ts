@@ -29,6 +29,9 @@ class DolphinDevice extends Homey.Device {
     this.api = new MaytronicsApi();
     this.cloud = new MaytronicsCloud();
 
+    // Pass device logger to MQTT client
+    this.cloud.setLogger(this.log.bind(this), this.error.bind(this));
+
     // Set up MQTT event handlers
     this.cloud.on('stateUpdate', this.onStateUpdate.bind(this));
     this.cloud.on('dynamicMessage', this.onDynamicMessage.bind(this));
@@ -48,10 +51,13 @@ class DolphinDevice extends Homey.Device {
     });
 
     // Register capability listeners
-    this.registerCapabilityListener('onoff', this.onCapabilityOnOff.bind(this));
     this.registerCapabilityListener('cleaning_mode', this.onCapabilityCleaningMode.bind(this));
-    this.registerCapabilityListener('dim', this.onCapabilityDim.bind(this));
     this.registerCapabilityListener('led_mode', this.onCapabilityLedMode.bind(this));
+    this.registerCapabilityListener('nav_forward', async () => this.cloud.sendJoystick('forward'));
+    this.registerCapabilityListener('nav_backward', async () => this.cloud.sendJoystick('backward'));
+    this.registerCapabilityListener('nav_left', async () => this.cloud.sendJoystick('left'));
+    this.registerCapabilityListener('nav_right', async () => this.cloud.sendJoystick('right'));
+    this.registerCapabilityListener('nav_stop', async () => this.cloud.sendJoystick('stop'));
 
     // Connect
     await this.connectToCloud();
@@ -70,6 +76,7 @@ class DolphinDevice extends Homey.Device {
       const { motorUnitSerial } = store;
 
       this.log(`Connecting: email=${email}, motorUnitSerial=${motorUnitSerial}`);
+      this.log('Store contents:', JSON.stringify(store));
 
       if (!email || !password) {
         throw new Error('Missing email or password in device settings');
@@ -86,7 +93,7 @@ class DolphinDevice extends Homey.Device {
       // Get AWS credentials
       this.log('Step 2: Getting AWS credentials...');
       this.awsCredentials = await this.api.getAwsCredentials(email, motorUnitSerial);
-      this.log('Step 2: AWS credentials received');
+      this.log('Step 2: AWS credentials received, fields:', Object.keys(this.awsCredentials));
 
       // Connect MQTT
       this.log('Step 3: Connecting MQTT...');
@@ -113,15 +120,23 @@ class DolphinDevice extends Homey.Device {
    * Handle reported state updates from MQTT shadow.
    */
   private onStateUpdate(state: ReportedState, _version: number): void {
+    this.log('State update received, top-level keys:', Object.keys(state));
+
     // System state
     let calculatedStatus: string | undefined;
     if (state.systemState) {
       const { pwsState, robotState } = state.systemState;
+      this.log(`systemState: pwsState=${pwsState}, robotState=${robotState}`);
       calculatedStatus = calculateState(pwsState, robotState);
+      this.log(`Calculated status: ${calculatedStatus}`);
 
       const isCleaning = calculatedStatus === CalculatedState.Cleaning || calculatedStatus === CalculatedState.Init;
-      this.setCapabilityValue('onoff', isCleaning).catch(this.error);
       this.setCapabilityValue('robot_status', calculatedStatus).catch(this.error);
+
+      // When not cleaning, reflect "off" in the cleaning mode picker
+      if (!isCleaning) {
+        this.setCapabilityValue('cleaning_mode', 'off').catch(this.error);
+      }
 
       // Cycle count (total power-on count)
       if (state.systemState.rTurnOnCount != null) {
@@ -199,7 +214,6 @@ class DolphinDevice extends Homey.Device {
       this.currentLedState = state.led;
       const ledModeStr = LED_MODES[state.led.ledMode] || 'blinking';
       this.setCapabilityValue('led_mode', ledModeStr).catch(this.error);
-      this.setCapabilityValue('dim', state.led.ledIntensity / 100).catch(this.error);
     }
   }
 
@@ -207,9 +221,17 @@ class DolphinDevice extends Homey.Device {
    * Handle dynamic MQTT messages (temperature for M700).
    */
   private onDynamicMessage(message: DynamicMessage): void {
-    // Temperature response
-    if (message.type === 'iotResponse' && message.temperature != null) {
-      this.setCapabilityValue('measure_temperature', message.temperature).catch(this.error);
+    this.log('Dynamic message received:', message.type, message.description);
+
+    // Temperature response (type can be 'pwsResponse' or 'iotResponse')
+    if (message.description === 'temperature' && message.content) {
+      const temp = (message.content as any).temperature;
+      if (temp != null) {
+        // Temperature comes as raw value (e.g. 181 = 18.1°C)
+        const tempCelsius = temp / 10;
+        this.log(`Temperature: raw=${temp}, celsius=${tempCelsius}`);
+        this.setCapabilityValue('measure_temperature', tempCelsius).catch(this.error);
+      }
     }
   }
 
@@ -239,31 +261,12 @@ class DolphinDevice extends Homey.Device {
 
   // --- Capability Listeners ---
 
-  private async onCapabilityOnOff(value: boolean): Promise<void> {
-    if (value) {
-      const mode = this.getCapabilityValue('cleaning_mode') || 'all';
-      await this.startCleaning(mode);
-    } else {
-      await this.stopCleaning();
-    }
-  }
-
   private async onCapabilityCleaningMode(value: string): Promise<void> {
-    // If currently cleaning, switch to the new mode
-    if (this.getCapabilityValue('onoff')) {
+    if (value === 'off') {
+      await this.stopCleaning();
+    } else {
       await this.startCleaning(value);
     }
-  }
-
-  private async onCapabilityDim(value: number): Promise<void> {
-    const intensity = Math.round(value * 100);
-    this.cloud.sendCommand({
-      led: {
-        ledEnable: this.currentLedState.ledEnable,
-        ledIntensity: intensity,
-        ledMode: this.currentLedState.ledMode,
-      },
-    });
   }
 
   private async onCapabilityLedMode(value: string): Promise<void> {
@@ -306,6 +309,14 @@ class DolphinDevice extends Homey.Device {
         ledMode: modeId,
       },
     });
+  }
+
+  async navigate(direction: string): Promise<void> {
+    this.cloud.sendJoystick(direction);
+  }
+
+  async exitNavigation(): Promise<void> {
+    this.cloud.exitJoystickMode();
   }
 
   // --- Scheduling ---
