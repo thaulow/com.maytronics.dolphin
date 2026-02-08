@@ -320,6 +320,11 @@
       "connectivity": [
         "cloud"
       ],
+      "images": {
+        "small": "/drivers/dolphin/assets/images/small.png",
+        "large": "/drivers/dolphin/assets/images/large.png",
+        "xlarge": "/drivers/dolphin/assets/images/xlarge.png"
+      },
       "pair": [
         {
           "id": "login_credentials",
